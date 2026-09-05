@@ -1,0 +1,22 @@
+{
+  "model_name": "XGBoost",
+  "feature_set": "Permutation 12",
+  "features": [
+    "gen_health_00",
+    "bmi_00",
+    "age_00",
+    "high_bp_00",
+    "high_cholesterol_00",
+    "race_00",
+    "l_checkup_00",
+    "drinks_alcohol_00",
+    "sex_00",
+    "has_personal_doctor_00",
+    "employment_status_00",
+    "had_heart_attack_00"
+  ],
+  "threshold": 0.4819578230381012,
+  "threshold_source": "Validation Best F2",
+  "task": "Diabetes risk screening",
+  "output_interpretation": "Model screening score, not a diagnosis"
+}
