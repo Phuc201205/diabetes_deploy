@@ -33,4 +33,3 @@ Các script `test_db.py` và `test_save_prediction.py` yêu cầu SQL Server/dat
 ## Lưu ý y khoa
 
 Đây là công cụ sàng lọc rủi ro. Điểm dự đoán không phải là chẩn đoán và không thay thế xét nghiệm hoặc tư vấn của nhân viên y tế.
-
