@@ -25,15 +25,13 @@ st.set_page_config(
 
 def render_html(content):
     """
-    Render HTML mà không bị Markdown hiểu nhầm
-    thành code block do thụt đầu dòng.
+    Render HTML trực tiếp bằng Streamlit.
+    Không đưa HTML qua Markdown parser.
     """
 
-    st.markdown(
-        dedent(content),
-        unsafe_allow_html=True
+    st.html(
+        dedent(content)
     )
-
 
 # ============================================================
 # STYLE
