@@ -26,7 +26,6 @@ st.set_page_config(
 def render_html(content):
     """
     Render HTML trực tiếp bằng Streamlit.
-    Không đưa HTML qua Markdown parser.
     """
 
     st.html(
@@ -55,7 +54,6 @@ render_html(
                 #f8fafc 100%
             );
     }
-
 
     .block-container {
         max-width: 1180px;
@@ -87,7 +85,6 @@ render_html(
             rgba(15, 23, 42, 0.05);
     }
 
-
     .hero-label {
         font-size: 0.82rem;
         font-weight: 700;
@@ -100,7 +97,6 @@ render_html(
         margin-bottom: 0.5rem;
     }
 
-
     .hero-title {
         font-size: 2.15rem;
         font-weight: 750;
@@ -109,7 +105,6 @@ render_html(
 
         margin-bottom: 0.55rem;
     }
-
 
     .hero-description {
         max-width: 850px;
@@ -137,7 +132,6 @@ render_html(
         margin-bottom: 1rem;
     }
 
-
     .section-title {
         font-size: 1.1rem;
         font-weight: 700;
@@ -146,7 +140,6 @@ render_html(
 
         margin-bottom: 0.2rem;
     }
-
 
     .section-description {
         color: #64748b;
@@ -163,7 +156,6 @@ render_html(
     div[data-baseweb="select"] > div {
         border-radius: 10px;
     }
-
 
     div[data-testid="stNumberInput"] input {
         border-radius: 10px;
@@ -235,18 +227,15 @@ render_html(
             rgba(15, 23, 42, 0.04);
     }
 
-
     .risk-score-safe {
         background: #f0fdf4;
         border-color: #bbf7d0;
     }
 
-
     .risk-score-alert {
         background: #fef2f2;
         border-color: #fecaca;
     }
-
 
     .risk-score-label {
         color: #64748b;
@@ -260,7 +249,6 @@ render_html(
         margin-bottom: 0.4rem;
     }
 
-
     .risk-score-value {
         font-size: 2.6rem;
         font-weight: 800;
@@ -270,16 +258,13 @@ render_html(
         margin-bottom: 0.2rem;
     }
 
-
     .risk-score-safe .risk-score-value {
         color: #16a34a;
     }
 
-
     .risk-score-alert .risk-score-value {
         color: #dc2626;
     }
-
 
     .risk-status {
         margin-top: 0.35rem;
@@ -288,11 +273,9 @@ render_html(
         font-weight: 700;
     }
 
-
     .risk-score-safe .risk-status {
         color: #15803d;
     }
-
 
     .risk-score-alert .risk-status {
         color: #b91c1c;
@@ -317,7 +300,6 @@ render_html(
         margin-bottom: 1rem;
     }
 
-
     .risk-bar-fill-safe {
         height: 100%;
 
@@ -325,7 +307,6 @@ render_html(
 
         border-radius: 999px;
     }
-
 
     .risk-bar-fill-alert {
         height: 100%;
@@ -335,14 +316,12 @@ render_html(
         border-radius: 999px;
     }
 
-
     .risk-score-detail {
         color: #475569;
 
         font-size: 0.95rem;
         line-height: 1.75;
     }
-
 
     .risk-score-note {
         margin-top: 0.8rem;
@@ -380,7 +359,6 @@ render_html(
 
 
 # ============================================================
-# HELPER
 # LẤY CATEGORY TỪ FITTED PREPROCESSOR
 # ============================================================
 
@@ -406,7 +384,7 @@ def get_fitted_categories(column_name):
         encoder = None
 
 
-        # Nếu transformer là sklearn Pipeline
+        # Transformer là sklearn Pipeline
         if hasattr(
             transformer,
             "named_steps"
@@ -427,7 +405,7 @@ def get_fitted_categories(column_name):
                     break
 
 
-        # Nếu transformer chính là OneHotEncoder
+        # Transformer chính là OneHotEncoder
         elif hasattr(
             transformer,
             "categories_"
@@ -460,13 +438,11 @@ def get_fitted_categories(column_name):
         for value in values:
 
             try:
-
                 is_missing = pd.isna(
                     value
                 )
 
             except Exception:
-
                 is_missing = False
 
 
@@ -523,11 +499,6 @@ def get_default_index(
     options,
     preferred_value
 ):
-    """
-    Trả về index của giá trị mặc định.
-
-    Nếu không tồn tại thì dùng phần tử đầu tiên.
-    """
 
     try:
 
@@ -604,7 +575,10 @@ BP_LABELS = {
         "Có",
 
     "Borderline":
-        "Mức ranh giới"
+        "Mức ranh giới",
+
+    "Unknown":
+        "Không biết / chưa được thông báo"
 }
 
 
@@ -722,6 +696,21 @@ EMPLOYMENT_OPTIONS = require_categories(
 )
 
 
+# Cho phép người dùng không biết thông tin huyết áp.
+# predictor.py sẽ chuyển Unknown thành np.nan.
+
+BP_INPUT_OPTIONS = list(
+    BP_OPTIONS
+)
+
+
+if "Unknown" not in BP_INPUT_OPTIONS:
+
+    BP_INPUT_OPTIONS.append(
+        "Unknown"
+    )
+
+
 # ============================================================
 # DATABASE HISTORY
 # ============================================================
@@ -827,11 +816,13 @@ render_html(
         </div>
 
         <div class="hero-description">
+
             Hệ thống sử dụng mô hình Machine Learning
             XGBoost được xây dựng từ dữ liệu BRFSS 2023
             để hỗ trợ sàng lọc nguy cơ tiểu đường dựa trên
             các thông tin sức khỏe, nhân khẩu học
-            và lối sống.
+            và khả năng tiếp cận chăm sóc y tế.
+
         </div>
 
     </div>
@@ -865,8 +856,7 @@ screening_tab, history_tab = st.tabs(
 
 
 # ============================================================
-# TAB 1
-# SCREENING
+# TAB 1 — SCREENING
 # ============================================================
 
 with screening_tab:
@@ -1005,9 +995,11 @@ with screening_tab:
                 </div>
 
                 <div class="section-description">
+
                     Các thông tin sức khỏe hiện tại
                     hoặc đã từng được bác sĩ
                     hay nhân viên y tế thông báo.
+
                 </div>
 
             </div>
@@ -1045,10 +1037,10 @@ with screening_tab:
                 "Bạn có từng được bác sĩ hoặc nhân viên y tế "
                 "thông báo rằng bạn bị cao huyết áp không?",
 
-                options=BP_OPTIONS,
+                options=BP_INPUT_OPTIONS,
 
                 index=get_default_index(
-                    BP_OPTIONS,
+                    BP_INPUT_OPTIONS,
                     "No"
                 ),
 
@@ -1101,7 +1093,7 @@ with screening_tab:
 
 
         # ====================================================
-        # 3. LỐI SỐNG & CHĂM SÓC Y TẾ
+        # 3. THÔNG TIN XÃ HỘI & CHĂM SÓC Y TẾ
         # ====================================================
 
         render_html(
@@ -1109,12 +1101,14 @@ with screening_tab:
             <div class="section-box">
 
                 <div class="section-title">
-                    🏥 3. Lối sống & chăm sóc y tế
+                    🏥 3. Thông tin xã hội & chăm sóc y tế
                 </div>
 
                 <div class="section-description">
-                    Thói quen, tình trạng việc làm
-                    và mức độ tiếp cận dịch vụ chăm sóc sức khỏe.
+
+                    Tình trạng việc làm và
+                    mức độ tiếp cận dịch vụ chăm sóc sức khỏe.
+
                 </div>
 
             </div>
@@ -1130,24 +1124,6 @@ with screening_tab:
 
 
         with care_col1:
-
-         
-                st.selectbox(
-                    "Bạn có sử dụng đồ uống có cồn không?",
-
-                    options=[
-                        "No",
-                        "Yes",
-                        "Unknown"
-                    ],
-
-                    index=0,
-
-                    format_func=lambda x:
-                        YES_NO_UNKNOWN_LABELS[x]
-                )
-            )
-
 
             employment_status = (
                 st.selectbox(
@@ -1244,7 +1220,6 @@ with screening_tab:
             "last_checkup":
                 last_checkup,
 
-
             "sex":
                 sex,
 
@@ -1332,22 +1307,39 @@ with screening_tab:
 
 
         score_percent = (
-            score * 100
+            score
+            * 100
         )
 
 
         threshold_percent = (
-            threshold * 100
+            threshold
+            * 100
+        )
+
+
+        # Dùng số đã làm tròn khi hiển thị
+        # để tránh chênh lệch 0.1 điểm %
+        # do số thực bên trong.
+
+        display_score_percent = round(
+            score_percent,
+            1
+        )
+
+
+        display_threshold_percent = round(
+            threshold_percent,
+            1
         )
 
 
         difference_percent = (
-            score_percent
-            - threshold_percent
+            display_score_percent
+            - display_threshold_percent
         )
 
 
-        # Giới hạn thanh hiển thị trong 0 - 100
         bar_percent = max(
             0.0,
             min(
@@ -1382,13 +1374,13 @@ with screening_tab:
 
         metric1.metric(
             "Model Risk Score",
-            f"{score_percent:.1f}%"
+            f"{display_score_percent:.1f}%"
         )
 
 
         metric2.metric(
             "Ngưỡng sàng lọc",
-            f"{threshold_percent:.1f}%"
+            f"{display_threshold_percent:.1f}%"
         )
 
 
@@ -1462,7 +1454,7 @@ with screening_tab:
                 </div>
 
                 <div class="risk-score-value">
-                    {score_percent:.1f}%
+                    {display_score_percent:.1f}%
                 </div>
 
                 <div class="risk-status">
@@ -1481,7 +1473,7 @@ with screening_tab:
                 <div class="risk-score-detail">
 
                     <b>Ngưỡng của mô hình:</b>
-                    {threshold_percent:.1f}%
+                    {display_threshold_percent:.1f}%
 
                     <br>
 
@@ -1522,8 +1514,8 @@ with screening_tab:
                     ⚠️ **Kết quả: Vượt ngưỡng sàng lọc**
 
                     Điểm do mô hình tạo ra cao hơn
-                    ngưỡng sàng lọc đã được xác định
-                    trên tập Validation.
+                    ngưỡng sàng lọc được xác định bằng
+                    5-fold OOF trên tập huấn luyện.
                     """
                 )
             )
@@ -1537,7 +1529,8 @@ with screening_tab:
                     ✅ **Kết quả: Không vượt ngưỡng sàng lọc**
 
                     Điểm do mô hình tạo ra chưa vượt
-                    ngưỡng sàng lọc đã xác định.
+                    ngưỡng sàng lọc được xác định bằng
+                    5-fold OOF trên tập huấn luyện.
                     """
                 )
             )
@@ -1563,6 +1556,18 @@ with screening_tab:
 
         if (
             last_input.get(
+                "high_bp"
+            )
+            == "Unknown"
+        ):
+
+            missing_information.append(
+                "thông tin cao huyết áp"
+            )
+
+
+        if (
+            last_input.get(
                 "high_cholesterol"
             )
             == "Unknown"
@@ -1571,7 +1576,6 @@ with screening_tab:
             missing_information.append(
                 "thông tin cholesterol"
             )
-
 
 
         if (
@@ -1652,8 +1656,7 @@ with screening_tab:
 
 
 # ============================================================
-# TAB 2
-# HISTORY
+# TAB 2 — HISTORY
 # ============================================================
 
 with history_tab:
@@ -1799,7 +1802,7 @@ with history_tab:
 
 
             # =================================================
-            # SCORE -> %
+            # SCORE → %
             # =================================================
 
             if (
@@ -1822,7 +1825,7 @@ with history_tab:
 
 
             # =================================================
-            # THRESHOLD -> %
+            # THRESHOLD → %
             # =================================================
 
             if (
