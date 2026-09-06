@@ -1,0 +1,35 @@
+{
+  "model_name": "XGBoost",
+  "model_version": "BRFSS-2023-NoAlcohol-v1",
+  "dataset": "BRFSS 2023",
+  "task": "Diabetes risk screening",
+  "feature_set": "No-Alcohol 11",
+  "num_features": 11,
+  "features": [
+    "gen_health_00",
+    "bmi_00",
+    "age_00",
+    "high_bp_00",
+    "high_cholesterol_00",
+    "race_00",
+    "l_checkup_00",
+    "sex_00",
+    "has_personal_doctor_00",
+    "employment_status_00",
+    "had_heart_attack_00"
+  ],
+  "excluded_feature": "drinks_alcohol_00",
+  "threshold": 0.45292794704437256,
+  "threshold_source": "5-fold OOF Training Best F2",
+  "oof_metrics": {
+    "average_precision": 0.4391181464607041,
+    "roc_auc": 0.8323054695533985,
+    "precision": 0.2929879507590587,
+    "recall": 0.8456548578124673,
+    "f2": 0.6140113646719737
+  },
+  "output_interpretation": "Model Risk Score used for diabetes screening. The score is not a clinical diagnosis and should not be interpreted as a calibrated clinical probability of diabetes.",
+  "research_model_note": "The original XGBoost Permutation-12 model is preserved separately as the primary research model.",
+  "deployment_revision_note": "The alcohol feature was removed following post-hoc explainability, stratified association, counterfactual sensitivity and ablation analyses. The observed alcohol association must not be interpreted as evidence of a protective causal effect.",
+  "threshold_sensitivity_note": "A lower threshold can achieve recall around 90%, but produces lower precision and specificity. The deployment threshold stored here is the OOF Best-F2 threshold."
+}

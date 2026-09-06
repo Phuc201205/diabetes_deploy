@@ -33,6 +33,7 @@ def render_html(content):
         dedent(content)
     )
 
+
 # ============================================================
 # STYLE
 # ============================================================
@@ -202,7 +203,7 @@ render_html(
 
 
     /* ========================================================
-       RESULT
+       RESULT TITLE
     ======================================================== */
 
     .result-title {
@@ -213,6 +214,143 @@ render_html(
         font-weight: 700;
 
         color: #0f172a;
+    }
+
+
+    /* ========================================================
+       RISK SCORE CARD
+    ======================================================== */
+
+    .risk-score-card {
+        padding: 1.5rem 1.6rem;
+
+        border-radius: 16px;
+        border: 1px solid;
+
+        margin-top: 1rem;
+        margin-bottom: 1rem;
+
+        box-shadow:
+            0 4px 18px
+            rgba(15, 23, 42, 0.04);
+    }
+
+
+    .risk-score-safe {
+        background: #f0fdf4;
+        border-color: #bbf7d0;
+    }
+
+
+    .risk-score-alert {
+        background: #fef2f2;
+        border-color: #fecaca;
+    }
+
+
+    .risk-score-label {
+        color: #64748b;
+
+        font-size: 0.82rem;
+        font-weight: 700;
+
+        letter-spacing: 0.07em;
+        text-transform: uppercase;
+
+        margin-bottom: 0.4rem;
+    }
+
+
+    .risk-score-value {
+        font-size: 2.6rem;
+        font-weight: 800;
+
+        line-height: 1.1;
+
+        margin-bottom: 0.2rem;
+    }
+
+
+    .risk-score-safe .risk-score-value {
+        color: #16a34a;
+    }
+
+
+    .risk-score-alert .risk-score-value {
+        color: #dc2626;
+    }
+
+
+    .risk-status {
+        margin-top: 0.35rem;
+
+        font-size: 1rem;
+        font-weight: 700;
+    }
+
+
+    .risk-score-safe .risk-status {
+        color: #15803d;
+    }
+
+
+    .risk-score-alert .risk-status {
+        color: #b91c1c;
+    }
+
+
+    /* ========================================================
+       SCORE BAR
+    ======================================================== */
+
+    .risk-bar {
+        width: 100%;
+        height: 12px;
+
+        background: #e2e8f0;
+
+        border-radius: 999px;
+
+        overflow: hidden;
+
+        margin-top: 1rem;
+        margin-bottom: 1rem;
+    }
+
+
+    .risk-bar-fill-safe {
+        height: 100%;
+
+        background: #22c55e;
+
+        border-radius: 999px;
+    }
+
+
+    .risk-bar-fill-alert {
+        height: 100%;
+
+        background: #ef4444;
+
+        border-radius: 999px;
+    }
+
+
+    .risk-score-detail {
+        color: #475569;
+
+        font-size: 0.95rem;
+        line-height: 1.75;
+    }
+
+
+    .risk-score-note {
+        margin-top: 0.8rem;
+
+        color: #64748b;
+
+        font-size: 0.85rem;
+        line-height: 1.6;
     }
 
 
@@ -286,7 +424,6 @@ def get_fitted_categories(column_name):
                 ):
 
                     encoder = step
-
                     break
 
 
@@ -776,10 +913,6 @@ with screening_tab:
         )
 
 
-        # ----------------------------------------------------
-        # LEFT
-        # ----------------------------------------------------
-
         with col1:
 
             age = st.number_input(
@@ -822,10 +955,6 @@ with screening_tab:
                     )
             )
 
-
-        # ----------------------------------------------------
-        # RIGHT
-        # ----------------------------------------------------
 
         with col2:
 
@@ -893,10 +1022,6 @@ with screening_tab:
         )
 
 
-        # ----------------------------------------------------
-        # HEALTH LEFT
-        # ----------------------------------------------------
-
         with health_col1:
 
             general_health = (
@@ -934,10 +1059,6 @@ with screening_tab:
                     )
             )
 
-
-        # ----------------------------------------------------
-        # HEALTH RIGHT
-        # ----------------------------------------------------
 
         with health_col2:
 
@@ -1008,10 +1129,6 @@ with screening_tab:
         )
 
 
-        # ----------------------------------------------------
-        # CARE LEFT
-        # ----------------------------------------------------
-
         with care_col1:
 
             drinks_alcohol = (
@@ -1046,10 +1163,6 @@ with screening_tab:
                 )
             )
 
-
-        # ----------------------------------------------------
-        # CARE RIGHT
-        # ----------------------------------------------------
 
         with care_col2:
 
@@ -1202,6 +1315,50 @@ with screening_tab:
         )
 
 
+        # ====================================================
+        # SCORE CALCULATION
+        # ====================================================
+
+        score = float(
+            result[
+                "prediction_score"
+            ]
+        )
+
+
+        threshold = float(
+            result[
+                "threshold"
+            ]
+        )
+
+
+        score_percent = (
+            score * 100
+        )
+
+
+        threshold_percent = (
+            threshold * 100
+        )
+
+
+        difference_percent = (
+            score_percent
+            - threshold_percent
+        )
+
+
+        # Giới hạn thanh hiển thị trong 0 - 100
+        bar_percent = max(
+            0.0,
+            min(
+                score_percent,
+                100.0
+            )
+        )
+
+
         st.divider()
 
 
@@ -1214,6 +1371,10 @@ with screening_tab:
         )
 
 
+        # ====================================================
+        # METRICS
+        # ====================================================
+
         metric1, metric2, metric3 = (
             st.columns(
                 3
@@ -1223,13 +1384,13 @@ with screening_tab:
 
         metric1.metric(
             "Model Risk Score",
-            f"{result['prediction_score']:.3f}"
+            f"{score_percent:.1f}%"
         )
 
 
         metric2.metric(
             "Ngưỡng sàng lọc",
-            f"{result['threshold']:.3f}"
+            f"{threshold_percent:.1f}%"
         )
 
 
@@ -1242,7 +1403,108 @@ with screening_tab:
         )
 
 
-        st.write("")
+        # ====================================================
+        # RISK SCORE CARD
+        # ====================================================
+
+        if score >= threshold:
+
+            score_class = (
+                "risk-score-alert"
+            )
+
+
+            bar_class = (
+                "risk-bar-fill-alert"
+            )
+
+
+            status_text = (
+                "Vượt ngưỡng sàng lọc"
+            )
+
+
+            comparison_text = (
+                f"Cao hơn ngưỡng "
+                f"{abs(difference_percent):.1f} "
+                f"điểm phần trăm"
+            )
+
+
+        else:
+
+            score_class = (
+                "risk-score-safe"
+            )
+
+
+            bar_class = (
+                "risk-bar-fill-safe"
+            )
+
+
+            status_text = (
+                "Không vượt ngưỡng sàng lọc"
+            )
+
+
+            comparison_text = (
+                f"Thấp hơn ngưỡng "
+                f"{abs(difference_percent):.1f} "
+                f"điểm phần trăm"
+            )
+
+
+        render_html(
+            f"""
+            <div class="risk-score-card {score_class}">
+
+                <div class="risk-score-label">
+                    Model Risk Score quy đổi
+                </div>
+
+                <div class="risk-score-value">
+                    {score_percent:.1f}%
+                </div>
+
+                <div class="risk-status">
+                    {status_text}
+                </div>
+
+                <div class="risk-bar">
+
+                    <div
+                        class="{bar_class}"
+                        style="width: {bar_percent:.1f}%;">
+                    </div>
+
+                </div>
+
+                <div class="risk-score-detail">
+
+                    <b>Ngưỡng của mô hình:</b>
+                    {threshold_percent:.1f}%
+
+                    <br>
+
+                    <b>So với ngưỡng:</b>
+                    {comparison_text}
+
+                </div>
+
+                <div class="risk-score-note">
+
+                    Phần trăm này là cách biểu diễn
+                    Model Risk Score trên thang 0–100%.
+
+                    Đây không phải là xác suất lâm sàng
+                    mắc tiểu đường.
+
+                </div>
+
+            </div>
+            """
+        )
 
 
         # ====================================================
@@ -1366,18 +1628,31 @@ with screening_tab:
                 Model Risk Score là điểm do mô hình
                 Machine Learning tạo ra trên thang từ 0 đến 1.
 
-                Điểm này được so sánh với ngưỡng sàng lọc
+                Trên giao diện, điểm này được nhân với 100
+                để biểu diễn dưới dạng phần trăm cho dễ đọc.
+
+                <br><br>
+
+                Ví dụ:
+                Score 0.65 được hiển thị thành 65%.
+
+                Việc quy đổi này không làm thay đổi
+                kết quả của mô hình.
+
+                <br><br>
+
+                Điểm được so sánh với ngưỡng sàng lọc
                 của mô hình để xác định kết quả
                 vượt hoặc không vượt ngưỡng.
 
                 <br><br>
 
-                Không nên diễn giải trực tiếp Model Risk Score
-                thành xác suất lâm sàng mắc tiểu đường.
+                <b>Quan trọng:</b>
+
+                Phần trăm Model Risk Score không phải
+                xác suất lâm sàng mắc tiểu đường.
 
                 <br><br>
-
-                <b>Lưu ý:</b>
 
                 Kết quả sàng lọc không phải chẩn đoán.
                 Nếu có triệu chứng, yếu tố nguy cơ hoặc lo ngại
@@ -1460,10 +1735,10 @@ with history_tab:
                         "Sức khỏe chung",
 
                     "prediction_score":
-                        "Model Risk Score",
+                        "Model Risk Score (%)",
 
                     "threshold":
-                        "Ngưỡng",
+                        "Ngưỡng (%)",
 
                     "predicted_class":
                         "Class",
@@ -1537,48 +1812,48 @@ with history_tab:
 
 
             # =================================================
-            # FORMAT SCORE
+            # SCORE -> %
             # =================================================
 
             if (
-                "Model Risk Score"
+                "Model Risk Score (%)"
                 in display_df.columns
             ):
 
                 display_df[
-                    "Model Risk Score"
+                    "Model Risk Score (%)"
                 ] = (
 
                     display_df[
-                        "Model Risk Score"
+                        "Model Risk Score (%)"
                     ]
 
-                    .round(
-                        4
-                    )
+                    * 100
+                ).round(
+                    1
                 )
 
 
             # =================================================
-            # FORMAT THRESHOLD
+            # THRESHOLD -> %
             # =================================================
 
             if (
-                "Ngưỡng"
+                "Ngưỡng (%)"
                 in display_df.columns
             ):
 
                 display_df[
-                    "Ngưỡng"
+                    "Ngưỡng (%)"
                 ] = (
 
                     display_df[
-                        "Ngưỡng"
+                        "Ngưỡng (%)"
                     ]
 
-                    .round(
-                        4
-                    )
+                    * 100
+                ).round(
+                    1
                 )
 
 
