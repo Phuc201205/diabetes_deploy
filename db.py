@@ -6,7 +6,10 @@ import pyodbc
 # ============================================================
 
 SERVER = r"LAPTOP-1I9RLDH2"
-DATABASE = "DiabetesRiskDB"
+
+DATABASE = (
+    "DiabetesRiskDB"
+)
 
 
 # ============================================================
@@ -14,15 +17,24 @@ DATABASE = "DiabetesRiskDB"
 # ============================================================
 
 def get_connection():
+
     connection_string = (
+
         "DRIVER={ODBC Driver 17 for SQL Server};"
+
         f"SERVER={SERVER};"
+
         f"DATABASE={DATABASE};"
+
         "Trusted_Connection=yes;"
+
         "TrustServerCertificate=yes;"
     )
 
-    return pyodbc.connect(connection_string)
+
+    return pyodbc.connect(
+        connection_string
+    )
 
 
 # ============================================================
@@ -30,25 +42,50 @@ def get_connection():
 # ============================================================
 
 def test_connection():
+
     try:
+
         conn = get_connection()
+
         cursor = conn.cursor()
 
-        cursor.execute("SELECT DB_NAME()")
 
-        database_name = cursor.fetchone()[0]
+        cursor.execute(
+            "SELECT DB_NAME()"
+        )
 
-        print("Kết nối SQL Server thành công.")
-        print("Database:", database_name)
+
+        database_name = (
+            cursor.fetchone()[0]
+        )
+
+
+        print(
+            "Kết nối SQL Server thành công."
+        )
+
+        print(
+            "Database:",
+            database_name
+        )
+
 
         cursor.close()
+
         conn.close()
+
 
         return True
 
+
     except Exception as e:
-        print("Kết nối thất bại:")
+
+        print(
+            "Kết nối thất bại:"
+        )
+
         print(e)
+
 
         return False
 
@@ -57,9 +94,14 @@ def test_connection():
 # SAVE PREDICTION INPUT
 # ============================================================
 
-def save_prediction_input(data):
+def save_prediction_input(
+    data
+):
+
     conn = get_connection()
+
     cursor = conn.cursor()
+
 
     sql = """
         INSERT INTO PredictionInput
@@ -77,32 +119,69 @@ def save_prediction_input(data):
             employment_status,
             had_heart_attack
         )
+
         OUTPUT INSERTED.case_id
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+
+        VALUES
+        (
+            ?, ?, ?, ?, ?, ?, ?,
+            ?, ?, ?, ?, ?
+        )
     """
 
+
     cursor.execute(
+
         sql,
+
         data["age"],
+
         data["bmi"],
+
         data["general_health"],
+
         data["high_bp"],
+
         data["high_cholesterol"],
+
         data["race"],
+
         data["last_checkup"],
-        data["drinks_alcohol"],
+
+        # Model deployment mới
+        # không sử dụng Alcohol.
+        data.get(
+            "drinks_alcohol"
+        ),
+
         data["sex"],
-        data["has_personal_doctor"],
-        data["employment_status"],
-        data["had_heart_attack"]
+
+        data[
+            "has_personal_doctor"
+        ],
+
+        data[
+            "employment_status"
+        ],
+
+        data[
+            "had_heart_attack"
+        ]
     )
 
-    case_id = cursor.fetchone()[0]
+
+    case_id = int(
+        cursor.fetchone()[0]
+    )
+
 
     conn.commit()
 
+
     cursor.close()
+
     conn.close()
+
 
     return case_id
 
@@ -120,8 +199,11 @@ def save_prediction_result(
     risk_level,
     recommendation
 ):
+
     conn = get_connection()
+
     cursor = conn.cursor()
+
 
     sql = """
         INSERT INTO PredictionResult
@@ -134,23 +216,39 @@ def save_prediction_result(
             risk_level,
             recommendation
         )
-        VALUES (?, ?, ?, ?, ?, ?, ?)
+
+        VALUES
+        (
+            ?, ?, ?, ?, ?, ?, ?
+        )
     """
 
+
     cursor.execute(
+
         sql,
+
         case_id,
+
         model_id,
+
         prediction_score,
+
         threshold,
+
         predicted_class,
+
         risk_level,
+
         recommendation
     )
 
+
     conn.commit()
 
+
     cursor.close()
+
     conn.close()
 
 
@@ -167,18 +265,35 @@ def save_complete_prediction(
     risk_level,
     recommendation
 ):
+
     case_id = save_prediction_input(
         input_data
     )
 
+
     save_prediction_result(
-        case_id=case_id,
-        model_id=model_id,
-        prediction_score=prediction_score,
-        threshold=threshold,
-        predicted_class=predicted_class,
-        risk_level=risk_level,
-        recommendation=recommendation
+
+        case_id=
+            case_id,
+
+        model_id=
+            model_id,
+
+        prediction_score=
+            prediction_score,
+
+        threshold=
+            threshold,
+
+        predicted_class=
+            predicted_class,
+
+        risk_level=
+            risk_level,
+
+        recommendation=
+            recommendation
     )
+
 
     return case_id

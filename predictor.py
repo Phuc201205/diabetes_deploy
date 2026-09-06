@@ -7,18 +7,19 @@ import xgboost as xgb
 
 # ============================================================
 # PATHS
+# DEPLOYMENT MODEL — NO-ALCOHOL 11
 # ============================================================
 
 PREPROCESSOR_PATH = (
-    "models/brfss_preprocessor.joblib"
+    "models/brfss_preprocessor_no_alcohol.joblib"
 )
 
 MODEL_PATH = (
-    "models/brfss_xgboost_model.json"
+    "models/brfss_xgboost_no_alcohol.json"
 )
 
 METADATA_PATH = (
-    "models/diabetes_model_metadata.json"
+    "models/diabetes_model_metadata_no_alcohol.json"
 )
 
 
@@ -46,11 +47,36 @@ with open(
     metadata = json.load(f)
 
 
-FEATURES = metadata["features"]
+FEATURES = list(
+    metadata["features"]
+)
 
 THRESHOLD = float(
     metadata["threshold"]
 )
+
+MODEL_VERSION = metadata[
+    "model_version"
+]
+
+
+# ============================================================
+# SAFETY CHECK
+# ============================================================
+
+if "drinks_alcohol_00" in FEATURES:
+
+    raise RuntimeError(
+        "Deployment model không được chứa drinks_alcohol_00."
+    )
+
+
+if len(FEATURES) != 11:
+
+    raise RuntimeError(
+        f"Deployment model phải có 11 features, "
+        f"nhưng metadata hiện có {len(FEATURES)}."
+    )
 
 
 # ============================================================
@@ -100,7 +126,8 @@ def age_to_code(age):
 
     else:
         raise ValueError(
-            "Model BRFSS này chỉ áp dụng cho người từ 18 tuổi trở lên."
+            "Model BRFSS này chỉ áp dụng cho "
+            "người từ 18 tuổi trở lên."
         )
 
 
@@ -117,6 +144,14 @@ def general_health_to_code(value):
         "Fair": 4.0,
         "Poor": 5.0
     }
+
+
+    if value not in mapping:
+
+        raise ValueError(
+            f"General Health không hợp lệ: {value}"
+        )
+
 
     return mapping[value]
 
@@ -135,11 +170,19 @@ def checkup_to_code(value):
         "Never": 5.0
     }
 
+
+    if value not in mapping:
+
+        raise ValueError(
+            f"Last Checkup không hợp lệ: {value}"
+        )
+
+
     return mapping[value]
 
 
 # ============================================================
-# YES / NO / UNKNOWN → BOOLEAN
+# YES / NO / UNKNOWN
 # ============================================================
 
 def yes_no_unknown(value):
@@ -153,8 +196,31 @@ def yes_no_unknown(value):
     elif value == "Unknown":
         return np.nan
 
+
     raise ValueError(
         f"Giá trị không hợp lệ: {value}"
+    )
+
+
+# ============================================================
+# HIGH BLOOD PRESSURE
+# ============================================================
+
+def high_bp_to_model(value):
+
+    if value in [
+        "No",
+        "Yes",
+        "Borderline"
+    ]:
+        return value
+
+    elif value == "Unknown":
+        return np.nan
+
+
+    raise ValueError(
+        f"High Blood Pressure không hợp lệ: {value}"
     )
 
 
@@ -165,6 +231,7 @@ def yes_no_unknown(value):
 def create_model_input(data):
 
     row = {
+
         "gen_health_00":
             general_health_to_code(
                 data["general_health"]
@@ -177,11 +244,15 @@ def create_model_input(data):
 
         "age_00":
             age_to_code(
-                int(data["age"])
+                int(
+                    data["age"]
+                )
             ),
 
         "high_bp_00":
-            data["high_bp"],
+            high_bp_to_model(
+                data["high_bp"]
+            ),
 
         "high_cholesterol_00":
             yes_no_unknown(
@@ -194,11 +265,6 @@ def create_model_input(data):
         "l_checkup_00":
             checkup_to_code(
                 data["last_checkup"]
-            ),
-
-        "drinks_alcohol_00":
-            yes_no_unknown(
-                data["drinks_alcohol"]
             ),
 
         "sex_00":
@@ -217,12 +283,10 @@ def create_model_input(data):
     }
 
 
-    df = pd.DataFrame(
+    return pd.DataFrame(
         [row],
         columns=FEATURES
     )
-
-    return df
 
 
 # ============================================================
@@ -283,6 +347,7 @@ def predict_diabetes(data):
 
 
     return {
+
         "prediction_score":
             prediction_score,
 
@@ -300,4 +365,38 @@ def predict_diabetes(data):
 
         "model_input":
             raw_input
+    }
+
+
+# ============================================================
+# MODEL INFO
+# ============================================================
+
+def get_model_info():
+
+    return {
+
+        "model_name":
+            metadata.get(
+                "model_name",
+                "XGBoost"
+            ),
+
+        "model_version":
+            MODEL_VERSION,
+
+        "feature_set":
+            metadata.get(
+                "feature_set",
+                "Unknown"
+            ),
+
+        "num_features":
+            len(FEATURES),
+
+        "features":
+            FEATURES,
+
+        "threshold":
+            THRESHOLD
     }

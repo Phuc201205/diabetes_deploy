@@ -1,24 +1,99 @@
-from predictor import predict_diabetes
+from predictor import (
+    predict_diabetes,
+    get_model_info
+)
 
+
+# ============================================================
+# MODEL INFO
+# ============================================================
+
+info = get_model_info()
+
+
+print(
+    "===================================="
+)
+
+print(
+    "MODEL INFO"
+)
+
+print(
+    "===================================="
+)
+
+
+print(
+    "Model:",
+    info["model_name"]
+)
+
+print(
+    "Version:",
+    info["model_version"]
+)
+
+print(
+    "Feature set:",
+    info["feature_set"]
+)
+
+print(
+    "Features:",
+    info["num_features"]
+)
+
+print(
+    "Threshold:",
+    info["threshold"]
+)
+
+
+print(
+    "\nDanh sách features:"
+)
+
+
+for i, feature in enumerate(
+    info["features"],
+    start=1
+):
+
+    print(
+        f"{i:2}. {feature}"
+    )
+
+
+# ============================================================
+# TEST DATA
+# ============================================================
 
 test_data = {
-    "age": 55,
 
-    "bmi": 31.5,
+    "age":
+        55,
 
-    "general_health": "Fair",
+    "bmi":
+        31.5,
 
-    "high_bp": "Yes",
+    "general_health":
+        "Fair",
 
-    "high_cholesterol": "Yes",
+    "high_bp":
+        "Yes",
 
-    "race": "White",
+    "high_cholesterol":
+        "Yes",
 
-    "last_checkup": "Within past year",
+    "race":
+        "White",
 
-    "drinks_alcohol": "No",
+    "last_checkup":
+        "Within past year",
 
-    "sex": "Male",
+    "sex":
+        "Male",
 
     "has_personal_doctor":
         "Yes, only one",
@@ -31,13 +106,17 @@ test_data = {
 }
 
 
+# ============================================================
+# PREDICTION
+# ============================================================
+
 result = predict_diabetes(
     test_data
 )
 
 
 print(
-    "===================================="
+    "\n===================================="
 )
 
 print(
@@ -80,5 +159,5 @@ print(
 )
 
 print(
-    result["model_input"]
+    result["model_input"].T
 )

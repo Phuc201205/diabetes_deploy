@@ -1131,7 +1131,7 @@ with screening_tab:
 
         with care_col1:
 
-            drinks_alcohol = (
+         
                 st.selectbox(
                     "Bạn có sử dụng đồ uống có cồn không?",
 
@@ -1244,8 +1244,6 @@ with screening_tab:
             "last_checkup":
                 last_checkup,
 
-            "drinks_alcohol":
-                drinks_alcohol,
 
             "sex":
                 sex,
@@ -1574,17 +1572,6 @@ with screening_tab:
                 "thông tin cholesterol"
             )
 
-
-        if (
-            last_input.get(
-                "drinks_alcohol"
-            )
-            == "Unknown"
-        ):
-
-            missing_information.append(
-                "thông tin sử dụng đồ uống có cồn"
-            )
 
 
         if (

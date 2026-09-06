@@ -3,24 +3,35 @@ from prediction_service import (
 )
 
 
+# ============================================================
+# TEST DATA
+# ============================================================
+
 test_data = {
-    "age": 55,
 
-    "bmi": 31.5,
+    "age":
+        55,
 
-    "general_health": "Fair",
+    "bmi":
+        31.5,
 
-    "high_bp": "Yes",
+    "general_health":
+        "Fair",
 
-    "high_cholesterol": "Yes",
+    "high_bp":
+        "Yes",
 
-    "race": "White",
+    "high_cholesterol":
+        "Yes",
 
-    "last_checkup": "Within past year",
+    "race":
+        "White",
 
-    "drinks_alcohol": "No",
+    "last_checkup":
+        "Within past year",
 
-    "sex": "Male",
+    "sex":
+        "Male",
 
     "has_personal_doctor":
         "Yes, only one",
@@ -32,6 +43,10 @@ test_data = {
         "No"
 }
 
+
+# ============================================================
+# PREDICT + SAVE
+# ============================================================
 
 result = predict_and_save(
     test_data
@@ -50,6 +65,7 @@ print(
     "===================================="
 )
 
+
 print(
     "Case ID:",
     result["case_id"]
@@ -58,6 +74,11 @@ print(
 print(
     "Model ID:",
     result["model_id"]
+)
+
+print(
+    "Model Version:",
+    result["model_version"]
 )
 
 print(
@@ -79,6 +100,7 @@ print(
     "Kết quả:",
     result["screening_result"]
 )
+
 
 print(
     "\nĐã lưu vào SQL Server thành công."

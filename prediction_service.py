@@ -1,18 +1,26 @@
 from db import get_connection
-from predictor import predict_diabetes
+
+from predictor import (
+    predict_diabetes,
+    MODEL_VERSION
+)
 
 
 # ============================================================
-# LẤY MODEL ID
+# GET MODEL ID
 # ============================================================
 
 def get_model_id(
-    model_version="BRFSS-2023-v1"
+    model_version=MODEL_VERSION
 ):
+
     conn = get_connection()
+
     cursor = conn.cursor()
 
+
     try:
+
         cursor.execute(
             """
             SELECT model_id
@@ -22,18 +30,27 @@ def get_model_id(
             model_version
         )
 
+
         row = cursor.fetchone()
 
+
         if row is None:
+
             raise ValueError(
-                f"Không tìm thấy model_version: "
+                "Không tìm thấy model_version: "
                 f"{model_version}"
             )
 
-        return int(row[0])
+
+        return int(
+            row[0]
+        )
+
 
     finally:
+
         cursor.close()
+
         conn.close()
 
 
@@ -41,7 +58,9 @@ def get_model_id(
 # PREDICT + SAVE SQL
 # ============================================================
 
-def predict_and_save(input_data):
+def predict_and_save(
+    input_data
+):
 
     # --------------------------------------------------------
     # 1. MODEL PREDICTION
@@ -51,20 +70,23 @@ def predict_and_save(input_data):
         input_data
     )
 
+
     model_id = get_model_id()
 
 
     # --------------------------------------------------------
-    # 2. DATABASE CONNECTION
+    # 2. DATABASE
     # --------------------------------------------------------
 
     conn = get_connection()
+
     cursor = conn.cursor()
+
 
     try:
 
         # ====================================================
-        # 3. INSERT PredictionInput
+        # 3. INSERT INPUT
         # ====================================================
 
         cursor.execute(
@@ -84,23 +106,50 @@ def predict_and_save(input_data):
                 employment_status,
                 had_heart_attack
             )
+
             OUTPUT INSERTED.case_id
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+
+            VALUES
+            (
+                ?, ?, ?, ?, ?, ?, ?,
+                ?, ?, ?, ?, ?
+            )
             """,
 
             input_data["age"],
+
             input_data["bmi"],
+
             input_data["general_health"],
+
             input_data["high_bp"],
+
             input_data["high_cholesterol"],
+
             input_data["race"],
+
             input_data["last_checkup"],
-            input_data["drinks_alcohol"],
+
+            # Deployment model không dùng Alcohol.
+            # Giữ cột cũ trong SQL để bảo toàn
+            # lịch sử dữ liệu của research model.
+            None,
+
             input_data["sex"],
-            input_data["has_personal_doctor"],
-            input_data["employment_status"],
-            input_data["had_heart_attack"]
+
+            input_data[
+                "has_personal_doctor"
+            ],
+
+            input_data[
+                "employment_status"
+            ],
+
+            input_data[
+                "had_heart_attack"
+            ]
         )
+
 
         case_id = int(
             cursor.fetchone()[0]
@@ -108,7 +157,7 @@ def predict_and_save(input_data):
 
 
         # ====================================================
-        # 4. INSERT PredictionResult
+        # 4. INSERT RESULT
         # ====================================================
 
         cursor.execute(
@@ -123,16 +172,36 @@ def predict_and_save(input_data):
                 risk_level,
                 recommendation
             )
-            VALUES (?, ?, ?, ?, ?, ?, ?)
+
+            VALUES
+            (
+                ?, ?, ?, ?, ?, ?, ?
+            )
             """,
 
             case_id,
+
             model_id,
-            result["prediction_score"],
-            result["threshold"],
-            result["predicted_class"],
-            result["screening_result"],
-            result["recommendation"]
+
+            result[
+                "prediction_score"
+            ],
+
+            result[
+                "threshold"
+            ],
+
+            result[
+                "predicted_class"
+            ],
+
+            result[
+                "screening_result"
+            ],
+
+            result[
+                "recommendation"
+            ]
         )
 
 
@@ -144,9 +213,17 @@ def predict_and_save(input_data):
 
 
         return {
+
             **result,
-            "case_id": case_id,
-            "model_id": model_id
+
+            "case_id":
+                case_id,
+
+            "model_id":
+                model_id,
+
+            "model_version":
+                MODEL_VERSION
         }
 
 
@@ -160,4 +237,5 @@ def predict_and_save(input_data):
     finally:
 
         cursor.close()
+
         conn.close()
