@@ -13,21 +13,17 @@ from db import get_connection
 # ============================================================
 
 st.set_page_config(
-    page_title="Diabetes Risk Screening",
+    page_title="Sàng lọc nguy cơ tiểu đường",
     page_icon="🩺",
     layout="wide"
 )
 
 
 # ============================================================
-# HELPER RENDER HTML
+# HELPER
 # ============================================================
 
 def render_html(content):
-    """
-    Render HTML trực tiếp bằng Streamlit.
-    """
-
     st.html(
         dedent(content)
     )
@@ -40,10 +36,6 @@ def render_html(content):
 render_html(
     """
     <style>
-
-    /* ========================================================
-       TOÀN TRANG
-    ======================================================== */
 
     .stApp {
         background:
@@ -60,11 +52,6 @@ render_html(
         padding-top: 2rem;
         padding-bottom: 4rem;
     }
-
-
-    /* ========================================================
-       HERO
-    ======================================================== */
 
     .hero-box {
         padding: 1.8rem 2rem;
@@ -115,11 +102,6 @@ render_html(
         line-height: 1.7;
     }
 
-
-    /* ========================================================
-       SECTION
-    ======================================================== */
-
     .section-box {
         padding: 1rem 1.2rem;
 
@@ -148,11 +130,6 @@ render_html(
         line-height: 1.5;
     }
 
-
-    /* ========================================================
-       INPUT
-    ======================================================== */
-
     div[data-baseweb="select"] > div {
         border-radius: 10px;
     }
@@ -160,11 +137,6 @@ render_html(
     div[data-testid="stNumberInput"] input {
         border-radius: 10px;
     }
-
-
-    /* ========================================================
-       BUTTON
-    ======================================================== */
 
     div[data-testid="stFormSubmitButton"] button {
         height: 48px;
@@ -174,11 +146,6 @@ render_html(
         font-size: 1rem;
         font-weight: 700;
     }
-
-
-    /* ========================================================
-       METRIC
-    ======================================================== */
 
     div[data-testid="stMetric"] {
         padding: 1rem 1.2rem;
@@ -193,11 +160,6 @@ render_html(
             rgba(15, 23, 42, 0.04);
     }
 
-
-    /* ========================================================
-       RESULT TITLE
-    ======================================================== */
-
     .result-title {
         margin-top: 1rem;
         margin-bottom: 0.8rem;
@@ -207,11 +169,6 @@ render_html(
 
         color: #0f172a;
     }
-
-
-    /* ========================================================
-       RISK SCORE CARD
-    ======================================================== */
 
     .risk-score-card {
         padding: 1.5rem 1.6rem;
@@ -281,11 +238,6 @@ render_html(
         color: #b91c1c;
     }
 
-
-    /* ========================================================
-       SCORE BAR
-    ======================================================== */
-
     .risk-bar {
         width: 100%;
         height: 12px;
@@ -332,41 +284,16 @@ render_html(
         line-height: 1.6;
     }
 
-
-    /* ========================================================
-       NOTE
-    ======================================================== */
-
-    .medical-note {
-        margin-top: 1rem;
-
-        color: #64748b;
-
-        font-size: 0.9rem;
-        line-height: 1.7;
-
-        padding: 1rem 1.2rem;
-
-        background: #f8fafc;
-
-        border: 1px solid #e2e8f0;
-        border-radius: 12px;
-    }
-
     </style>
     """
 )
 
 
 # ============================================================
-# LẤY CATEGORY TỪ FITTED PREPROCESSOR
+# ĐỌC CATEGORY TỪ PREPROCESSOR
 # ============================================================
 
 def get_fitted_categories(column_name):
-    """
-    Lấy category chính xác mà OneHotEncoder
-    đã học khi huấn luyện.
-    """
 
     for _, transformer, columns in preprocessor.transformers_:
 
@@ -384,7 +311,6 @@ def get_fitted_categories(column_name):
         encoder = None
 
 
-        # Transformer là sklearn Pipeline
         if hasattr(
             transformer,
             "named_steps"
@@ -405,7 +331,6 @@ def get_fitted_categories(column_name):
                     break
 
 
-        # Transformer chính là OneHotEncoder
         elif hasattr(
             transformer,
             "categories_"
@@ -470,12 +395,6 @@ def get_fitted_categories(column_name):
 
 
 def require_categories(column_name):
-    """
-    Không tự đoán category.
-
-    Nếu không đọc được category từ fitted model,
-    ứng dụng sẽ dừng.
-    """
 
     values = get_fitted_categories(
         column_name
@@ -485,8 +404,8 @@ def require_categories(column_name):
     if not values:
 
         st.error(
-            "Không đọc được category của "
-            f"{column_name} từ preprocessor."
+            "Không thể đọc dữ liệu cần thiết "
+            "từ mô hình."
         )
 
         st.stop()
@@ -512,7 +431,7 @@ def get_default_index(
 
 
 # ============================================================
-# TRANSLATION LABELS
+# NHÃN TIẾNG VIỆT
 # ============================================================
 
 GENERAL_HEALTH_LABELS = {
@@ -641,14 +560,12 @@ EMPLOYMENT_LABELS = {
     "Self-employed":
         "Tự kinh doanh",
 
-    # Trường hợp đúng theo category thực tế của model
     "Out of work for less that 1 year":
         "Thất nghiệp dưới 1 năm",
 
     "Out of work for more than 1 year":
         "Thất nghiệp trên 1 năm",
 
-    # Giữ thêm các biến thể để tránh lỗi hiển thị
     "Out of work for less than 1 year":
         "Thất nghiệp dưới 1 năm",
 
@@ -674,6 +591,7 @@ EMPLOYMENT_LABELS = {
         "Không có khả năng làm việc"
 }
 
+
 # ============================================================
 # MODEL CATEGORIES
 # ============================================================
@@ -682,29 +600,22 @@ BP_OPTIONS = require_categories(
     "high_bp_00"
 )
 
-
 RACE_OPTIONS = require_categories(
     "race_00"
 )
-
 
 SEX_OPTIONS = require_categories(
     "sex_00"
 )
 
-
 DOCTOR_OPTIONS = require_categories(
     "has_personal_doctor_00"
 )
-
 
 EMPLOYMENT_OPTIONS = require_categories(
     "employment_status_00"
 )
 
-
-# Cho phép người dùng không biết thông tin huyết áp.
-# predictor.py sẽ chuyển Unknown thành np.nan.
 
 BP_INPUT_OPTIONS = list(
     BP_OPTIONS
@@ -719,7 +630,7 @@ if "Unknown" not in BP_INPUT_OPTIONS:
 
 
 # ============================================================
-# DATABASE HISTORY
+# LỊCH SỬ SQL
 # ============================================================
 
 def load_prediction_history(
@@ -815,7 +726,7 @@ render_html(
     <div class="hero-box">
 
         <div class="hero-label">
-            Diabetes Risk Screening
+            Sàng lọc nguy cơ tiểu đường
         </div>
 
         <div class="hero-title">
@@ -824,11 +735,10 @@ render_html(
 
         <div class="hero-description">
 
-            Hệ thống sử dụng mô hình Machine Learning
-            XGBoost được xây dựng từ dữ liệu BRFSS 2023
-            để hỗ trợ sàng lọc nguy cơ tiểu đường dựa trên
-            các thông tin sức khỏe, nhân khẩu học
-            và khả năng tiếp cận chăm sóc y tế.
+            Hệ thống sử dụng Machine Learning
+            để hỗ trợ đánh giá nguy cơ tiểu đường
+            dựa trên một số thông tin sức khỏe
+            và thông tin cá nhân cơ bản.
 
         </div>
 
@@ -838,15 +748,8 @@ render_html(
 
 
 st.warning(
-    dedent(
-        """
-        ⚠️ **Lưu ý y tế:** Kết quả của hệ thống chỉ phục vụ
-        mục đích sàng lọc và tham khảo.
-
-        Đây không phải là chẩn đoán y khoa và không thay thế
-        xét nghiệm hoặc tư vấn của nhân viên y tế.
-        """
-    )
+    "⚠️ Kết quả chỉ có mục đích hỗ trợ sàng lọc, "
+    "không thay thế chẩn đoán hoặc xét nghiệm y khoa."
 )
 
 
@@ -863,19 +766,14 @@ screening_tab, history_tab = st.tabs(
 
 
 # ============================================================
-# TAB 1 — SCREENING
+# TAB 1 — SÀNG LỌC
 # ============================================================
 
 with screening_tab:
 
     st.write(
-        dedent(
-            """
-            Vui lòng nhập các thông tin bên dưới.
-            Các thông tin này tương ứng với các đặc trưng
-            được sử dụng bởi mô hình Machine Learning.
-            """
-        )
+        "Vui lòng cung cấp các thông tin bên dưới "
+        "để hệ thống thực hiện sàng lọc."
     )
 
 
@@ -896,8 +794,8 @@ with screening_tab:
                 </div>
 
                 <div class="section-description">
-                    Tuổi, giới tính, thể trạng
-                    và thông tin nhân khẩu học.
+                    Tuổi, giới tính, chiều cao,
+                    cân nặng và nhóm nhân khẩu học.
                 </div>
 
             </div>
@@ -940,8 +838,7 @@ with screening_tab:
 
 
             race = st.selectbox(
-                "Nhóm chủng tộc / sắc tộc "
-                "(theo phân nhóm BRFSS)",
+                "Nhóm chủng tộc / sắc tộc",
 
                 options=RACE_OPTIONS,
 
@@ -984,8 +881,7 @@ with screening_tab:
 
 
             st.info(
-                f"**BMI được tính tự động:** "
-                f"{bmi:.2f}"
+                f"BMI của bạn: **{bmi:.2f}**"
             )
 
 
@@ -1002,11 +898,8 @@ with screening_tab:
                 </div>
 
                 <div class="section-description">
-
-                    Các thông tin sức khỏe hiện tại
-                    hoặc đã từng được bác sĩ
-                    hay nhân viên y tế thông báo.
-
+                    Một số thông tin về sức khỏe
+                    và tiền sử bệnh.
                 </div>
 
             </div>
@@ -1100,7 +993,7 @@ with screening_tab:
 
 
         # ====================================================
-        # 3. THÔNG TIN XÃ HỘI & CHĂM SÓC Y TẾ
+        # 3. CHĂM SÓC Y TẾ & VIỆC LÀM
         # ====================================================
 
         render_html(
@@ -1108,14 +1001,12 @@ with screening_tab:
             <div class="section-box">
 
                 <div class="section-title">
-                    🏥 3. Thông tin xã hội & chăm sóc y tế
+                    🏥 3. Chăm sóc y tế & việc làm
                 </div>
 
                 <div class="section-description">
-
-                    Tình trạng việc làm và
-                    mức độ tiếp cận dịch vụ chăm sóc sức khỏe.
-
+                    Thông tin về việc làm
+                    và khả năng tiếp cận chăm sóc sức khỏe.
                 </div>
 
             </div>
@@ -1192,7 +1083,7 @@ with screening_tab:
 
         submitted = (
             st.form_submit_button(
-                "🔎 Thực hiện sàng lọc",
+                "🔎 Xem kết quả sàng lọc",
                 width="stretch"
             )
         )
@@ -1261,8 +1152,8 @@ with screening_tab:
         except Exception as error:
 
             st.error(
-                "Không thể thực hiện dự đoán "
-                "hoặc lưu kết quả vào SQL Server."
+                "Không thể thực hiện sàng lọc. "
+                "Vui lòng thử lại."
             )
 
 
@@ -1272,7 +1163,7 @@ with screening_tab:
 
 
     # ========================================================
-    # DISPLAY RESULT
+    # HIỂN THỊ KẾT QUẢ
     # ========================================================
 
     if (
@@ -1294,10 +1185,6 @@ with screening_tab:
             )
         )
 
-
-        # ====================================================
-        # SCORE CALCULATION
-        # ====================================================
 
         score = float(
             result[
@@ -1324,10 +1211,6 @@ with screening_tab:
             * 100
         )
 
-
-        # Dùng số đã làm tròn khi hiển thị
-        # để tránh chênh lệch 0.1 điểm %
-        # do số thực bên trong.
 
         display_score_percent = round(
             score_percent,
@@ -1368,10 +1251,6 @@ with screening_tab:
         )
 
 
-        # ====================================================
-        # METRICS
-        # ====================================================
-
         metric1, metric2, metric3 = (
             st.columns(
                 3
@@ -1380,7 +1259,7 @@ with screening_tab:
 
 
         metric1.metric(
-            "Model Risk Score",
+            "Điểm sàng lọc nguy cơ",
             f"{display_score_percent:.1f}%"
         )
 
@@ -1399,10 +1278,6 @@ with screening_tab:
             )
         )
 
-
-        # ====================================================
-        # RISK SCORE CARD
-        # ====================================================
 
         if score >= threshold:
 
@@ -1457,7 +1332,7 @@ with screening_tab:
             <div class="risk-score-card {score_class}">
 
                 <div class="risk-score-label">
-                    Model Risk Score quy đổi
+                    Điểm sàng lọc nguy cơ
                 </div>
 
                 <div class="risk-score-value">
@@ -1479,7 +1354,7 @@ with screening_tab:
 
                 <div class="risk-score-detail">
 
-                    <b>Ngưỡng của mô hình:</b>
+                    <b>Ngưỡng sàng lọc:</b>
                     {display_threshold_percent:.1f}%
 
                     <br>
@@ -1490,23 +1365,15 @@ with screening_tab:
                 </div>
 
                 <div class="risk-score-note">
-
-                    Phần trăm này là cách biểu diễn
-                    Model Risk Score trên thang 0–100%.
-
-                    Đây không phải là xác suất lâm sàng
-                    mắc tiểu đường.
-
+                    Điểm này dùng để hỗ trợ sàng lọc
+                    và không phải xác suất chính xác
+                    bạn mắc tiểu đường.
                 </div>
 
             </div>
             """
         )
 
-
-        # ====================================================
-        # RESULT STATUS
-        # ====================================================
 
         if (
             result[
@@ -1516,46 +1383,24 @@ with screening_tab:
         ):
 
             st.warning(
-                dedent(
-                    """
-                    ⚠️ **Kết quả: Vượt ngưỡng sàng lọc**
-
-                    Điểm do mô hình tạo ra cao hơn
-                    ngưỡng sàng lọc được xác định bằng
-                    5-fold OOF trên tập huấn luyện.
-                    """
-                )
+                "⚠️ **Kết quả: Vượt ngưỡng sàng lọc**\n\n"
+                "Bạn nên cân nhắc thực hiện xét nghiệm "
+                "đường huyết hoặc HbA1c và trao đổi "
+                "với nhân viên y tế."
             )
 
 
         else:
 
             st.success(
-                dedent(
-                    """
-                    ✅ **Kết quả: Không vượt ngưỡng sàng lọc**
-
-                    Điểm do mô hình tạo ra chưa vượt
-                    ngưỡng sàng lọc được xác định bằng
-                    5-fold OOF trên tập huấn luyện.
-                    """
-                )
+                "✅ **Kết quả: Không vượt ngưỡng sàng lọc**\n\n"
+                "Kết quả hiện tại chưa vượt ngưỡng "
+                "cảnh báo của hệ thống."
             )
 
 
         # ====================================================
-        # RECOMMENDATION
-        # ====================================================
-
-        st.info(
-            result[
-                "recommendation"
-            ]
-        )
-
-
-        # ====================================================
-        # MISSING INFORMATION
+        # THÔNG TIN CÒN THIẾU
         # ====================================================
 
         missing_information = []
@@ -1569,7 +1414,7 @@ with screening_tab:
         ):
 
             missing_information.append(
-                "thông tin cao huyết áp"
+                "cao huyết áp"
             )
 
 
@@ -1581,7 +1426,7 @@ with screening_tab:
         ):
 
             missing_information.append(
-                "thông tin cholesterol"
+                "cholesterol"
             )
 
 
@@ -1599,87 +1444,23 @@ with screening_tab:
 
         if missing_information:
 
-            st.warning(
-                "Một số thông tin chưa được cung cấp đầy đủ: "
+            st.info(
+                "Một số thông tin chưa được cung cấp: "
                 + ", ".join(
                     missing_information
                 )
-                + ". "
-                + "Mô hình vẫn có thể xử lý giá trị thiếu, "
-                + "nhưng kết quả nên được diễn giải "
-                + "thận trọng hơn."
+                + "."
             )
 
 
-        # ====================================================
-        # SCORE EXPLANATION
-        # ====================================================
-
-        render_html(
-            """
-            <div class="medical-note">
-
-                <b>Giải thích Model Risk Score:</b>
-
-                <br><br>
-
-                Model Risk Score là điểm do mô hình
-                Machine Learning tạo ra trên thang từ 0 đến 1.
-
-                Trên giao diện, điểm này được nhân với 100
-                để biểu diễn dưới dạng phần trăm cho dễ đọc.
-
-                <br><br>
-
-                Ví dụ:
-                Score 0.65 được hiển thị thành 65%.
-
-                Việc quy đổi này không làm thay đổi
-                kết quả của mô hình.
-
-                <br><br>
-
-                Điểm được so sánh với ngưỡng sàng lọc
-                của mô hình để xác định kết quả
-                vượt hoặc không vượt ngưỡng.
-
-                <br><br>
-
-                <b>Quan trọng:</b>
-
-                Phần trăm Model Risk Score không phải
-                xác suất lâm sàng mắc tiểu đường.
-
-                <br><br>
-
-                Kết quả sàng lọc không phải chẩn đoán.
-                Nếu có triệu chứng, yếu tố nguy cơ hoặc lo ngại
-                về sức khỏe, người dùng nên trao đổi với
-                nhân viên y tế hoặc thực hiện xét nghiệm phù hợp.
-
-            </div>
-            """
-        )
-
-
 # ============================================================
-# TAB 2 — HISTORY
+# TAB 2 — LỊCH SỬ
 # ============================================================
 
 with history_tab:
 
     st.subheader(
         "📋 Lịch sử sàng lọc"
-    )
-
-
-    st.write(
-        dedent(
-            """
-            Các kết quả dưới đây được đọc trực tiếp
-            từ SQL Server `DiabetesRiskDB`.
-            """
-        )
     )
 
 
@@ -1706,18 +1487,14 @@ with history_tab:
             )
 
 
-            # =================================================
-            # RENAME COLUMNS
-            # =================================================
-
             display_df.rename(
                 columns={
 
                     "prediction_id":
-                        "Prediction ID",
+                        "Mã kết quả",
 
                     "case_id":
-                        "Case ID",
+                        "Mã sàng lọc",
 
                     "age":
                         "Tuổi",
@@ -1732,19 +1509,19 @@ with history_tab:
                         "Sức khỏe chung",
 
                     "prediction_score":
-                        "Model Risk Score (%)",
+                        "Điểm sàng lọc nguy cơ (%)",
 
                     "threshold":
                         "Ngưỡng (%)",
 
                     "predicted_class":
-                        "Class",
+                        "Phân loại",
 
                     "risk_level":
                         "Kết quả",
 
                     "model_version":
-                        "Phiên bản model",
+                        "Phiên bản mô hình",
 
                     "created_at":
                         "Thời gian"
@@ -1753,10 +1530,6 @@ with history_tab:
                 inplace=True
             )
 
-
-            # =================================================
-            # VIỆT HÓA GIỚI TÍNH
-            # =================================================
 
             if (
                 "Giới tính"
@@ -1781,10 +1554,6 @@ with history_tab:
                 )
 
 
-            # =================================================
-            # VIỆT HÓA SỨC KHỎE CHUNG
-            # =================================================
-
             if (
                 "Sức khỏe chung"
                 in display_df.columns
@@ -1808,21 +1577,17 @@ with history_tab:
                 )
 
 
-            # =================================================
-            # SCORE → %
-            # =================================================
-
             if (
-                "Model Risk Score (%)"
+                "Điểm sàng lọc nguy cơ (%)"
                 in display_df.columns
             ):
 
                 display_df[
-                    "Model Risk Score (%)"
+                    "Điểm sàng lọc nguy cơ (%)"
                 ] = (
 
                     display_df[
-                        "Model Risk Score (%)"
+                        "Điểm sàng lọc nguy cơ (%)"
                     ]
 
                     * 100
@@ -1830,10 +1595,6 @@ with history_tab:
                     1
                 )
 
-
-            # =================================================
-            # THRESHOLD → %
-            # =================================================
 
             if (
                 "Ngưỡng (%)"
@@ -1854,10 +1615,6 @@ with history_tab:
                 )
 
 
-            # =================================================
-            # FORMAT BMI
-            # =================================================
-
             if (
                 "BMI"
                 in display_df.columns
@@ -1877,10 +1634,6 @@ with history_tab:
                 )
 
 
-            # =================================================
-            # DISPLAY TABLE
-            # =================================================
-
             st.dataframe(
                 display_df,
                 width="stretch",
@@ -1897,8 +1650,7 @@ with history_tab:
     except Exception as error:
 
         st.error(
-            "Không thể đọc lịch sử "
-            "từ SQL Server."
+            "Không thể đọc lịch sử sàng lọc."
         )
 
 
@@ -1915,6 +1667,6 @@ st.divider()
 
 
 st.caption(
-    "Đồ án phân tích dữ liệu và Machine Learning "
-    "hỗ trợ sàng lọc nguy cơ tiểu đường — BRFSS 2023."
+    "Hệ thống hỗ trợ sàng lọc nguy cơ tiểu đường "
+    "dựa trên mô hình Machine Learning."
 )
