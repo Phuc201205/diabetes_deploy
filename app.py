@@ -641,11 +641,19 @@ EMPLOYMENT_LABELS = {
     "Self-employed":
         "Tự kinh doanh",
 
-    "Out of work for 1 year or more":
-        "Thất nghiệp từ 1 năm trở lên",
+    # Trường hợp đúng theo category thực tế của model
+    "Out of work for less that 1 year":
+        "Thất nghiệp dưới 1 năm",
 
+    "Out of work for more than 1 year":
+        "Thất nghiệp trên 1 năm",
+
+    # Giữ thêm các biến thể để tránh lỗi hiển thị
     "Out of work for less than 1 year":
         "Thất nghiệp dưới 1 năm",
+
+    "Out of work for 1 year or more":
+        "Thất nghiệp từ 1 năm trở lên",
 
     "A homemaker":
         "Nội trợ",
@@ -665,7 +673,6 @@ EMPLOYMENT_LABELS = {
     "Unable to work":
         "Không có khả năng làm việc"
 }
-
 
 # ============================================================
 # MODEL CATEGORIES
